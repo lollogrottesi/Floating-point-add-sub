@@ -32,33 +32,36 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity postnormalization_unit is
-    port (E: in std_logic_vector(7 downto 0);
-          M: in std_logic_vector(22 downto 0);--Sign bit is apart.
-          OMZ: in std_logic;
+    port (E: in std_logic_vector(7 downto 0); --E is unbiased.
+          --23 bit mantissa + 1 hidden bit + 1 carry out = 25 bit.
+          M: in std_logic_vector(24 downto 0);--Sign bit is apart.
+          OMZ: in std_logic;                  --This flag is used to handle total zero mantissa.
           norma_M: out std_logic_vector(22 downto 0);
           norma_E: out std_logic_vector(7 downto 0));
 end postnormalization_unit;
 
 architecture Behavioral of postnormalization_unit is
 
-type shift_matrix is array (0 to 22) of std_logic_vector(22 downto 0);
+type shift_matrix is array (0 to 23) of std_logic_vector(24 downto 0);
 signal shift_M : shift_matrix;
-signal flag_mask: std_ulogic_vector(22 downto 0);
+signal flag_mask, right_mask: std_logic_vector(24 downto 0);
+signal long_normalized_M : std_logic_vector(24 downto 0);
 signal mask_index: std_logic_vector (7 downto 0);
 begin
 
 --Generate all possible shift left.
 mask_shift:
-    for i in 0 to 22 generate
+    for i in 0 to 23 generate
         shift_M(i) <= std_logic_vector(shift_left(unsigned(M), i));
     end generate mask_shift;
-    
+       
+ 
 --Check for mask that has '1' in 22 position (23 is the sign).
 flag_mak: 
-    for j in 22 downto 0 generate
-        flag_mask(j) <=  shift_M(j)(22) and '1';
+    for j in 23 downto 0 generate
+        flag_mask(j) <=  shift_M(j)(23) and '1';
     end generate flag_mak;
-
+    
 Decoder_process:    
     process(flag_mask)
     begin
@@ -106,50 +109,41 @@ Decoder_process:
             mask_index <= "00010100";     
         elsif (flag_mask (21 downto 0)= "1000000000000000000000") then
             mask_index <= "00010101";   
-        elsif (flag_mask = "10000000000000000000000") then
+        elsif (flag_mask (22 downto 0)= "10000000000000000000000") then
             mask_index <= "00010110";   
+        elsif (flag_mask (23 downto 0)= "100000000000000000000000") then
+            mask_index <= "00010111"; 
         else
             mask_index <= "00000000";
         end if;
-        
-        
---        case flag_mask is
---            when "----------------------1" => mask_index <= "00000000";
---            when "---------------------10" => mask_index <= "00000001";
---            when "--------------------100" => mask_index <= "00000010";
---            when "-------------------1000" => mask_index <= "00000011";
---            when "------------------10000" => mask_index <= "00000100";
---            when "-----------------100000" => mask_index <= "00000101";
---            when "----------------1000000" => mask_index <= "00000110";
---            when "---------------10000000" => mask_index <= "00000111";
---            when "--------------100000000" => mask_index <= "00001000";
---            when "-------------1000000000" => mask_index <= "00001001";
---            when "------------10000000000" => mask_index <= "00001010";
---            when "-----------100000000000" => mask_index <= "00001011";
---            when "----------1000000000000" => mask_index <= "00001100";
---            when "---------10000000000000" => mask_index <= "00001101";
---            when "--------100000000000000" => mask_index <= "00001110";
---            when "-------1000000000000000" => mask_index <= "00001111";
---            when "------10000000000000000" => mask_index <= "00010000";
---            when "-----100000000000000000" => mask_index <= "00010001";
---            when "----1000000000000000000" => mask_index <= "00010010";
---            when "---10000000000000000000" => mask_index <= "00010011";
---            when "--100000000000000000000" => mask_index <= "00010100";
---            when "-1000000000000000000000" => mask_index <= "00010101";
---            when "10000000000000000000000" => mask_index <= "00010110";
---            when others => mask_index <= "00000000";
---        end case;
     end process;
-    
-output_process:
-    process(OMZ, mask_index)
+
+    process(OMZ, mask_index, M, E)
     begin
-        if (OMZ = '1') then
-            norma_E <= E;
-            norma_M <= M;
+        if (M(24) = '1') then
+           long_normalized_M <= std_logic_vector(shift_right(unsigned(E), 1));
+           norma_E <= std_logic_vector(unsigned(E) + 1);
         else
-            norma_M  <= std_logic_vector(shift_left(unsigned(M), to_integer(unsigned(mask_index))));
-            norma_E <= std_logic_vector(unsigned(E) - unsigned(mask_index));
+           if (OMZ = '0') then
+               long_normalized_M <= M;
+               norma_E <= E; 
+           else
+               long_normalized_M <= std_logic_vector(shift_left(unsigned(M), to_integer(unsigned(mask_index)))); 
+               norma_E <= std_logic_vector(unsigned(E) - unsigned(mask_index)); 
+           end if; 
         end if;
     end process;
+    
+--norma_E <= std_logic_vector(unsigned(E) - unsigned(mask_index))  when OMZ = '0' and M(24) = '0' else
+--           E                                                     when OMZ = '0' and M(24) = '1' and mask_index = "00000000" else
+--           std_logic_vector(unsigned(E) + 1)                     when OMZ = '0' and M(24) = '1' else
+--           E                                                     when OMZ = '1';
+            
+--post_normalized_M <= std_logic_vector(shift_left(unsigned(M), to_integer(unsigned(mask_index))))  when OMZ = '0' and M(24) = '0' else
+--                     M                                                                            when OMZ = '0' and M(24) = '1' and mask_index = "00000000" else
+--                     std_logic_vector(shift_right(unsigned(E), 1))                                when OMZ = '0' and M(24) = '1' else
+--                     M                                                                            when OMZ = '1';
+                     
+norma_M <= long_normalized_M(22 downto 0);--Drop last normalized 1.
+
 end Behavioral;
