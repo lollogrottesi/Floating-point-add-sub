@@ -121,7 +121,7 @@ Decoder_process:
     process(OMZ, mask_index, M, E)
     begin
         if (M(24) = '1') then
-           long_normalized_M <= std_logic_vector(shift_right(unsigned(E), 1));
+           long_normalized_M <= std_logic_vector(shift_right(unsigned(M), 1));
            norma_E <= std_logic_vector(unsigned(E) + 1);
         else
            if (OMZ = '0') then

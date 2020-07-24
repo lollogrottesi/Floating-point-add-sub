@@ -32,12 +32,12 @@ use IEEE.STD_LOGIC_1164.ALL;
 --use UNISIM.VComponents.all;
 
 entity mantissa_add_sub is
-    --The sum is perfomed in 25 bits, 1 bit sign + implicit 1 before mantissa + 23 bit matissa = 25 bit.
+    --The sum is perfomed in 25 bits, 1 bit sign + 1 guardian bit +implicit 1 before mantissa + 23 bit matissa = 26 bit.
     --The rapresentation is sign magnitude so conversion to two's complement could be necessary.
-    port (M_a: in std_logic_vector(24 downto 0);
-          M_b: in std_logic_vector(24 downto 0);
+    port (M_a: in std_logic_vector(25 downto 0);
+          M_b: in std_logic_vector(25 downto 0);
           add_sub: in std_logic;
-          sum_M: out std_logic_vector(24 downto 0);
+          sum_M: out std_logic_vector(25 downto 0);
           overflow: out std_logic;
           underflow: out std_logic;
           OMZ: out std_logic);
@@ -63,7 +63,7 @@ component Equality_check_unit is
           A_eq_B: out std_logic);
 end component;
 
-constant sign    : integer := 24;
+constant sign    : integer := 25;
 --constant num_bit : integer := 25;
 signal signed_M_b, signed_M_a, tmp_signed_M_b, one_compl_M_a, one_compl_M_b: std_logic_vector (sign downto 0);
 signal operation: std_logic_vector(sign downto 0);
@@ -71,7 +71,7 @@ signal check_OMZ: std_logic_vector(22 downto 0);
 signal tmp_out, one_compl_out, sign_magn_out  : std_logic_vector(sign downto 0);
 begin
 --Adder instantiation.
-look_ahead_adder: c_l_addr generic map (25)
+look_ahead_adder: c_l_addr generic map (26)
                            port map(signed_M_a, tmp_signed_M_b, add_sub, tmp_out, overflow);
 
 --Check unit is implemented to detect all zero pattern in the output mantissa.

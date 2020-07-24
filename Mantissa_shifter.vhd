@@ -32,17 +32,19 @@ use IEEE.NUMERIC_STD.ALL;
 --use UNISIM.VComponents.all;
 
 entity Mantissa_shifter is
-    port (M_a: in std_logic_vector(23 downto 0);
-          M_b: in std_logic_vector(23 downto 0);
+    --1 bit sign + 1 hidden bit + 23 bit mantissa = 25 bits.
+    port (M_a: in std_logic_vector(24 downto 0);
+          M_b: in std_logic_vector(24 downto 0);
           shift_amt_a: in std_logic_vector(7 downto 0);
           shift_amt_b: in std_logic_vector(7 downto 0);
-          M_a_shifted: out std_logic_vector(23 downto 0);
-          M_b_shifted: out std_logic_vector(23 downto 0));
+          M_a_shifted: out std_logic_vector(24 downto 0);
+          M_b_shifted: out std_logic_vector(24 downto 0));
 end Mantissa_shifter;
 
 architecture Behavioral of Mantissa_shifter is
 
 begin
+--Format : 24=> sign, 23=>hiddenbit, 22 downoto 0 => mantissa.
 M_a_shifted <= std_logic_vector(shift_right(signed(M_a) , to_integer(unsigned(shift_amt_a))));
 M_b_shifted <= std_logic_vector(shift_right(signed(M_b) , to_integer(unsigned(shift_amt_b))));
 
