@@ -22,7 +22,7 @@ To perfom un addition or a subctraction between two numbers X1 = (M1, E1), X2 = 
 
 Example:
 
-![operation](/img/exampple.png)
+![example](/img/example.png)
 
 
 The final hardware implementation is the following:
