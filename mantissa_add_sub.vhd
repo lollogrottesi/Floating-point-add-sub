@@ -67,7 +67,7 @@ constant sign    : integer := 25;
 --constant num_bit : integer := 25;
 signal signed_M_b, signed_M_a, tmp_signed_M_b, one_compl_M_a, one_compl_M_b: std_logic_vector (sign downto 0);
 signal operation: std_logic_vector(sign downto 0);
-signal check_OMZ: std_logic_vector(22 downto 0);
+signal check_OMZ: std_logic_vector(24 downto 0);
 signal tmp_out, one_compl_out, sign_magn_out  : std_logic_vector(sign downto 0);
 begin
 --Adder instantiation.
@@ -75,8 +75,8 @@ look_ahead_adder: c_l_addr generic map (26)
                            port map(signed_M_a, tmp_signed_M_b, add_sub, tmp_out, overflow);
 
 --Check unit is implemented to detect all zero pattern in the output mantissa.
-OMZ_comparator: Equality_check_unit generic map(23)
-                                    port map (tmp_out (22 downto 0), check_OMZ, OMZ);
+OMZ_comparator: Equality_check_unit generic map(25)
+                                    port map (tmp_out (24 downto 0), check_OMZ, OMZ);
 check_OMZ <= (others=>'0');
 
 
@@ -97,7 +97,7 @@ operation <= (others => add_sub);
 tmp_signed_M_b <= signed_M_b xor operation;
 
 --Underflow computation.
-underflow <= (tmp_out(sign) and (not M_a(sign)) and (not tmp_signed_M_b(sign))) or ((not tmp_out(sign)) and M_a(sign) and tmp_signed_M_b(sign));
+underflow <= (tmp_out(sign) and (not signed_M_a(sign)) and (not tmp_signed_M_b(sign))) or ((not tmp_out(sign)) and signed_M_a(sign) and tmp_signed_M_b(sign));
 
 --If necessary retrasfrm back the two's complement into sign-magnitude.
 one_compl_out (sign) <= tmp_out(sign);

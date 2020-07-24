@@ -124,7 +124,7 @@ Decoder_process:
            long_normalized_M <= std_logic_vector(shift_right(unsigned(M), 1));
            norma_E <= std_logic_vector(unsigned(E) + 1);
         else
-           if (OMZ = '0') then
+           if (OMZ = '1') then
                long_normalized_M <= M;
                norma_E <= E; 
            else

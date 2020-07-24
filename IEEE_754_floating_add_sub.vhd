@@ -91,9 +91,7 @@ signal pre_computation_m_a, pre_computation_m_b: std_logic_vector (25 downto 0);
 signal post_computation_m: std_logic_vector(25 downto 0);
 signal prenormalization_m : std_logic_vector(24 downto 0);
 
---Debug signals.
-signal pre_normalization: std_logic_vector(31 downto 0);
-signal prenormalization_mantissa: std_logic_vector(24 downto 0);
+signal tmp_FP_z: std_logic_vector (31 downto 0);
 signal tmp_OMZ, tmp_carry: std_logic;
 begin
 
@@ -106,7 +104,7 @@ alignment_shift_stage: Mantissa_shifter port map(sign_mantissa_a, sign_mantissa_
 --Perform addition/subctraction.
 computation_stage: mantissa_add_sub port map(pre_computation_m_a, pre_computation_m_b, add_sub, post_computation_m, tmp_carry, underflow, tmp_OMZ);
 --Normalization.
-normalization_stage: postnormalization_unit port map(max_E, prenormalization_m, tmp_OMZ, FP_z(22 downto 0), FP_z(30 downto 23));
+normalization_stage: postnormalization_unit port map(max_E, prenormalization_m, tmp_OMZ, tmp_FP_z(22 downto 0), tmp_FP_z(30 downto 23));
 
 
 ------------------------Build the signed matissa.(-1)^S*|M|--------------------------------------------------------------------------------
@@ -135,12 +133,14 @@ pre_computation_m_b(23 downto 0) <= post_shift_mb(23 downto 0);
 
 ----------------------Adjust form from add/sub to normalization stage-----------------------------------------------------------------------
 prenormalization_m  <= post_computation_m(24 downto 0); --Includes the hidden bit.
---prenormalization_m (24) <= tmp_carry;                                --Attach carry out bit.
 --------------------------------------------------------------------------------------------------------------------------------------------
---Debug signal.
-pre_normalization <= post_computation_m(23)&max_E&post_computation_m(22 downto 0);
+
 --Add sign to final result.
-FP_z(31) <= post_computation_m(25);
+tmp_FP_z(31) <= post_computation_m(25);
+
+--Connect outputs.
+FP_z <= tmp_FP_z when tmp_OMZ = '0' else
+        (others =>'0'); 
 --Flags.
 OMZ <= tmp_OMZ;
 overflow <= tmp_carry;
