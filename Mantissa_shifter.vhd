@@ -45,8 +45,8 @@ architecture Behavioral of Mantissa_shifter is
 
 begin
 --Format : 24=> sign, 23=>hiddenbit, 22 downoto 0 => mantissa.
-M_a_shifted <= std_logic_vector(shift_right(signed(M_a) , to_integer(unsigned(shift_amt_a))));
-M_b_shifted <= std_logic_vector(shift_right(signed(M_b) , to_integer(unsigned(shift_amt_b))));
-
-
+M_a_shifted(23 downto 0) <= std_logic_vector(shift_right(unsigned(M_a(23 downto 0)) , to_integer(unsigned(shift_amt_a))));
+M_b_shifted(23 downto 0) <= std_logic_vector(shift_right(unsigned(M_b(23 downto 0)) , to_integer(unsigned(shift_amt_b))));
+M_a_shifted(24) <= M_a(24);
+M_b_shifted(24) <= M_b(24);
 end Behavioral;

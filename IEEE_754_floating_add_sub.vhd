@@ -110,7 +110,7 @@ normalization_stage: postnormalization_unit port map(max_E, prenormalization_m, 
 ------------------------Build the signed matissa.(-1)^S*|M|--------------------------------------------------------------------------------
 sign_mantissa_a(24) <= FP_a(31);
 sign_mantissa_a(22 downto 0) <= FP_a(22 downto 0);
-sign_mantissa_b(24) <= FP_a(31);
+sign_mantissa_b(24) <= FP_b(31);
 sign_mantissa_b(22 downto 0) <= FP_b(22 downto 0);
 --Attach the hidden bit (24th bit) follwing the IEEE 754 standard.
 sign_mantissa_a(23) <= '0' when FP_a(30 downto 23) = "00000000" else 
