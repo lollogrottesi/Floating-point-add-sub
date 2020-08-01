@@ -37,12 +37,6 @@ entity IEEE_754_Add_Cmp_unit is
           add_subAndCmp: in std_logic;
           cmp_ctrl:      in std_logic_vector(2 downto 0);   --Select one compare operation.
           cmp_out:       out std_logic;                     --Result of the selected comparison.
-          A_eq_B_s: out std_logic;
-          A_not_eq_B_s: out std_logic;
-          A_gr_B_s: out std_logic;
-          A_gr_eq_B_s: out std_logic;
-          A_low_B_s: out std_logic;
-          A_low_eq_B_s: out std_logic;
           FP_z: out std_logic_vector(31 downto 0));
 end IEEE_754_Add_Cmp_unit;
 
@@ -107,10 +101,13 @@ sign_a_b <= FP_a(31)&FP_b(31);
                 A_low_eq_B <= not overflow or OMZ;
         end case; 
     end process;
-A_eq_B_s <= A_eq_B;
-A_not_eq_B_s <= A_not_eq_B;
-A_gr_B_s <= A_gr_B;
-A_gr_eq_B_s <= A_gr_eq_B;
-A_low_B_s <= A_low_B;
-A_low_eq_B_s <= A_low_eq_B;
+    
+cmp_out <= A_eq_B       when cmp_ctrl = "000" else
+           A_not_eq_B   when cmp_ctrl = "001" else
+           A_gr_eq_B    when cmp_ctrl = "010" else
+           A_gr_B       when cmp_ctrl = "011" else
+           A_low_eq_B   when cmp_ctrl = "100" else
+           A_low_B      when cmp_ctrl = "101" else
+           '0';
+           
 end Behavioral;
