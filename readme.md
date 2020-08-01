@@ -30,3 +30,5 @@ The final hardware implementation is the following:
 ![scheme](/img/scheme.png)
 
 The OMZ is used to detect all zero pattern in the output mantissa, is used for the normalization coordination.
+
+Using OMZ and Overflow bit a signed comparator unit has been implemented, this unit relies only when subctraction is perfomed.
